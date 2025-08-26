@@ -49,6 +49,7 @@ for row in cursor.fetchall():
     if not encrypted_password:
         password = "[vazio]"
     else:
+        print(f"DEBUG: len={len(encrypted_password)} prefix={encrypted_password[:3]}")
         try:
             # Apenas AES-GCM moderno (v10/v11)
             if encrypted_password[:3] in (b'v10', b'v11'):
