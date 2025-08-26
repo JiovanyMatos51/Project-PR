@@ -39,8 +39,14 @@ for row in cursor.fetchall():
     url = row[0]
     username = row[1]
     encrypted_password = row[2]
-
+    
     try:
+        # Certificar que é bytes
+        if isinstance(encrypted_password, memoryview):
+            encrypted_password = encrypted_password.tobytes()
+        elif isinstance(encrypted_password, str):
+            encrypted_password = encrypted_password.encode('utf-8')
+
         # Detectar se é v10/v11 (AES-GCM)
         if encrypted_password[:3] == b'v10' or encrypted_password[:3] == b'v11':
             iv = encrypted_password[3:15]  # 12 bytes
