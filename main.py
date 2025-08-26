@@ -41,23 +41,24 @@ for row in cursor.fetchall():
     encrypted_password = row[2]
     
     try:
-        # Certificar que é bytes
-        if isinstance(encrypted_password, memoryview):
-            encrypted_password = encrypted_password.tobytes()
-        elif isinstance(encrypted_password, str):
-            encrypted_password = encrypted_password.encode('utf-8')
+# Certificar que é bytes
+if isinstance(encrypted_password, memoryview):
+    encrypted_password = encrypted_password.tobytes()
+elif isinstance(encrypted_password, str):
+    encrypted_password = encrypted_password.encode('utf-8')
 
-        # Detectar se é v10/v11 (AES-GCM)
-        if encrypted_password[:3] == b'v10' or encrypted_password[:3] == b'v11':
-            iv = encrypted_password[3:15]  # 12 bytes
-            ciphertext = encrypted_password[15:-16]
-            tag = encrypted_password[-16:]
+# Detectar formato
+if encrypted_password[:3] in (b'v10', b'v11'):
+    # AES-GCM moderno
+    iv = encrypted_password[3:15]  # 12 bytes
+    ciphertext = encrypted_password[15:-16]
+    tag = encrypted_password[-16:]
 
-            cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-            password = cipher.decrypt_and_verify(ciphertext, tag).decode()
-        else:
-            # Formato legado DPAPI
-            password = win32crypt.CryptUnprotectData(encrypted_password, None, None, None, 0)[1].decode()
+    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
+    password = cipher.decrypt_and_verify(ciphertext, tag).decode()
+else:
+    # Formato legado DPAPI
+    password = win32crypt.CryptUnprotectData(encrypted_password, None, None, None, 0)[1].decode()
     except Exception as e:
         password = f"[ERRO] {str(e)}"
 
