@@ -45,20 +45,26 @@ for row in cursor.fetchall():
     elif isinstance(encrypted_password, str):
         encrypted_password = encrypted_password.encode('utf-8')
 
-    password = ""
-    try:
-        # Apenas AES-GCM moderno (v10/v11)
-        if encrypted_password[:3] in (b'v10', b'v11'):
-            iv = encrypted_password[3:15]  # 12 bytes
-            ciphertext = encrypted_password[15:-16]
-            tag = encrypted_password[-16:]
+    # Ignorar entradas vazias
+    if not encrypted_password:
+        password = "[vazio]"
+    else:
+        try:
+            # Apenas AES-GCM moderno (v10/v11)
+            if encrypted_password[:3] in (b'v10', b'v11'):
+                if len(encrypted_password) < 3 + 12 + 16:
+                    password = "[blob muito curto]"
+                else:
+                    iv = encrypted_password[3:15]  # 12 bytes
+                    ciphertext = encrypted_password[15:-16]
+                    tag = encrypted_password[-16:]
 
-            cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-            password = cipher.decrypt_and_verify(ciphertext, tag).decode()
-        else:
-            password = "[Não é v10/v11, formato legado não processado]"
-    except Exception as e:
-        password = f"[ERRO] {str(e)}"
+                    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
+                    password = cipher.decrypt_and_verify(ciphertext, tag).decode()
+            else:
+                password = "[Não é v10/v11, formato legado não processado]"
+        except Exception as e:
+            password = f"[ERRO] {str(e)}"
 
     print(f"URL: {url}\nUsername: {username}\nPassword: {password}\n{'-'*40}")
 
