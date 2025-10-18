@@ -1,12 +1,34 @@
 -- Information
 local title = "Kofu SAB Hacks"
-local versao = "v0.1.2"
+local versao = "v0.1.3"
 local logotitle = "KF"
 local canvasy = 1.5
 
 -- Variables
 local plr = game.Players.LocalPlayer
 local plrgui = plr:WaitForChild("PlayerGui")
+
+-- Servico de Buscar Objetos
+local Services = {
+	game:GetService("Workspace"),
+	game:GetService("ReplicatedStorage"),
+	game:GetService("ReplicatedFirst"),
+	game:GetService("Lighting"),
+	plr,
+	game:GetService("StarterGui")
+}
+
+local IgnoreList = {
+	"Map",
+	"Side",
+	"terrain",
+	"PointLight",
+	"Attachment",
+	"Beam",
+	"UIGradient",
+	"UIStroke",
+	"UIListLayout",
+}
 
 -- Create GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -309,8 +331,8 @@ TextBox.FontSize = Enum.FontSize.Size14
 TextBox.TextSize = 10
 TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 TextBox.Text = ""
-TextBox.MultiLine = true
 TextBox.CursorPosition = -1
+TextBox.MultiLine = true
 TextBox.Font = Enum.Font.FredokaOne
 TextBox.ClearTextOnFocus = false
 TextBox.Parent = Frame
@@ -370,43 +392,50 @@ open.MouseButton1Click:Connect(function()
 	open.Visible = false
 end)
 
--- Main Functions
-
-local Services = {
-	game:GetService("Workspace"),
-	game:GetService("ReplicatedStorage"),
-	game:GetService("ReplicatedFirst"),
-	game:GetService("Lighting"),
-	plr,
-	game:GetService("StarterGui")
-}
+-- Função que verifica se o nome contém uma das palavras da lista
+local function shouldIgnore(name)
+	local lowerName = string.lower(name)
+	for _, word in ipairs(IgnoreList) do
+		if string.find(lowerName, string.lower(word)) then
+			return true
+		end
+	end
+	return false
+end
 
 -- Função recursiva para montar lista hierárquica
 local function listInstances(parent, depth)
 	local lines = {}
 	local prefix = string.rep("-", depth)
+
 	for _, obj in ipairs(parent:GetChildren()) do
-		table.insert(lines, string.format("%s %s (%s)", prefix, obj.Name, obj.ClassName))
-		local descendants = listInstances(obj, depth + 1)
-		for _, line in ipairs(descendants) do
-			table.insert(lines, line)
+		if not shouldIgnore(obj.Name) then
+			table.insert(lines, string.format("%s %s (%s)", prefix, obj.Name, obj.ClassName))
+			-- recursão só acontece se o item não foi ignorado
+			local descendants = listInstances(obj, depth + 1)
+			for _, line in ipairs(descendants) do
+				table.insert(lines, line)
+			end
 		end
 	end
+
 	return lines
 end
 
--- Função principal que lista todos os serviços e objetos
+-- Função principal
 local function listAllInstances()
 	local lines = {}
 	table.insert(lines, "=== Lista de instâncias acessíveis ===\n")
 
 	for _, service in ipairs(Services) do
-		table.insert(lines, string.format("(%s)", service.Name))
-		local descendants = listInstances(service, 1)
-		for _, line in ipairs(descendants) do
-			table.insert(lines, line)
+		if not shouldIgnore(service.Name) then
+			table.insert(lines, string.format("(%s)", service.Name))
+			local descendants = listInstances(service, 1)
+			for _, line in ipairs(descendants) do
+				table.insert(lines, line)
+			end
+			table.insert(lines, "")
 		end
-		table.insert(lines, "")
 	end
 
 	return table.concat(lines, "\n")
@@ -418,13 +447,8 @@ ZListins.MouseButton1Click:Connect(function()
 	if TextBox.Visible == false then
 	TextBox.Visible = true
 	local output = listAllInstances()
-
-	-- Segurança: corta se for texto demais
-	if #output > 197000 then
-		output = output:sub(1, 197000) .. "\n[Lista cortada: muito conteúdo]"
-	end
-
 		TextBox.Text = output
+		
 	else
 		TextBox.Visible = false
 	end
