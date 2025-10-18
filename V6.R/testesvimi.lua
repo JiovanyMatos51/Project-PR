@@ -1,6 +1,6 @@
 -- Information
 local title = "Kofu SAB Hacks"
-local versao = "v0.1.3"
+local versao = "v1.4.0"
 local logotitle = "KF"
 local canvasy = 1.5
 
@@ -8,7 +8,7 @@ local canvasy = 1.5
 local plr = game.Players.LocalPlayer
 local plrgui = plr:WaitForChild("PlayerGui")
 
--- Servico de Buscar Objetos
+-- Tabelas
 local Services = {
 	game:GetService("Workspace"),
 	game:GetService("ReplicatedStorage"),
@@ -19,15 +19,27 @@ local Services = {
 }
 
 local IgnoreList = {
-	"Map",
-	"Side",
-	"terrain",
+	"Side 1",
+	"Side 2",
+	"Side 3",
 	"PointLight",
 	"Attachment",
 	"Beam",
 	"UIGradient",
 	"UIStroke",
-	"UIListLayout",
+	"UIListLayout"
+}
+
+local NoClipList = {
+	"structure base home",
+	"Main"
+}
+
+local NoClipModelsList = {
+	"Side 1",
+	"Side 2",
+	"Side 3",
+	"LaserHitbox",
 }
 
 -- Create GUI
@@ -441,6 +453,30 @@ local function listAllInstances()
 	return table.concat(lines, "\n")
 end
 
+
+-- NO CLIP
+local function matchesList(name, list)
+	local lowerName = string.lower(name)
+	for _, word in ipairs(list) do
+		if string.find(lowerName, string.lower(word)) then
+			return true
+		end
+	end
+	return false
+end
+
+local function applyNoClip()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and matchesList(obj.Name, NoClipList) then
+			local parentModel = obj:FindFirstAncestorOfClass("Model")
+			local parentfolder = obj:FindFirstAncestorOfClass("Folder")
+			if parentModel and matchesList(parentModel.Name, NoClipModelsList) or parentfolder and matchesList(parentfolder.Name, NoClipModelsList) then
+				obj.CanCollide = false
+			end
+		end
+	end
+end
+
 -- Buttons
 
 ZListins.MouseButton1Click:Connect(function()
@@ -452,4 +488,9 @@ ZListins.MouseButton1Click:Connect(function()
 	else
 		TextBox.Visible = false
 	end
+end)
+
+CNoClip.MouseButton1Click:Connect(function()
+		CNoClip.BackgroundColor3 = Color3.new(0,255,0)
+		applyNoClip()
 end)
