@@ -19,7 +19,7 @@ TextButton.Size = UDim2.new(0.9090909, 0, 0.5, 0)
 TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 TextButton.Position = UDim2.new(0.0409563, 0, 0.2480501, 0)
 TextButton.BorderSizePixel = 0
-TextButton.BackgroundColor3 = Color3.fromRGB(0, 2, 255)
+TextButton.BackgroundColor3 = Color3.fromRGB(25, 255, 25)
 TextButton.FontSize = Enum.FontSize.Size14
 TextButton.TextSize = 14
 TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -55,8 +55,7 @@ ScreenGui.Parent = plrgui
 -- Serviços que o cliente pode acessar
 local Services = {
 	--game:GetService("Workspace"),
-	game:GetService("Lighting"),
-	--game:GetService("ReplicatedStorage"),
+	game:GetService("ReplicatedStorage"),
 	--game:GetService("ReplicatedFirst")
 }
 
