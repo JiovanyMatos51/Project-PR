@@ -13,4 +13,15 @@ text1.Size = UDim2.new(0,180,0,50)
 text1.Position = UDim2.new(0,0,0,20)
 text1.Parent = frame
 text1.BackgroundTransparency = 1
-text1.Text = "Cocofanto Elefanto para todos meus amores"
+text1.Text = "O Kotoko é gay"
+wait(1)
+local part = Instance.new("Part")
+part.Size = Vector3.new(4,4,4)
+part.Parent = workspace
+part.Anchored = true
+part.Position = plr.Character.HumanoidRootPart.Position
+local spmesh = Instance.new("SpecialMesh")
+spmesh.Parent = part
+spmesh.MeshId = "rbxassetid://14579252063"
+spmesh.TextureId = "rbxassetid://14579294286"
+spmesh.Scale = Vector3.new(3,3,3)
