@@ -1,6 +1,6 @@
 -- Information
 local title = "Kofu SAB Hacks"
-local versao = "v1.6.0"
+local versao = "v1.6.1"
 local logotitle = "KF"
 local canvasy = 1.5
 
@@ -11,7 +11,6 @@ local HRP = Character:WaitForChild("HumanoidRootPart")
 local plrgui = plr:WaitForChild("PlayerGui")
 local RunService = game:GetService("RunService")
 
-local flightForce = 100  -- intensidade da força (pode ajustar)
 local stopDistance = 10   -- distância para parar o voo
 local flightEnabled = false
 local currentConnection
@@ -493,8 +492,11 @@ local function FlyToPart(target)
 			flightEnabled = false
 			return
 		end
-
-		bodyVel.Velocity = direction.Unit * flightForce
+		
+		local val = getNumericValue()
+		if not val then return end
+		bodyVel.Velocity = direction.Unit * val
+		
 	end)
 end
 
