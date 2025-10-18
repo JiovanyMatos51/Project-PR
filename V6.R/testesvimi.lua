@@ -1,3 +1,4 @@
+-- version 1.7.1
 local plr = game.Players.LocalPlayer
 local plrgui = plr:WaitForChild("PlayerGui")
 
@@ -5,7 +6,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 220, 0, 100)
+Frame.Size = UDim2.new(0.1720094, 0, 0.1388889, 0)
 Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Frame.BackgroundTransparency = 0.1
 Frame.Position = UDim2.new(0.3018006, 0, 0.2284123, 0)
@@ -14,7 +15,7 @@ Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Frame.Parent = ScreenGui
 
 local TextButton = Instance.new("TextButton")
-TextButton.Size = UDim2.new(0, 200, 0, 50)
+TextButton.Size = UDim2.new(0.9090909, 0, 0.5, 0)
 TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 TextButton.Position = UDim2.new(0.0409563, 0, 0.2480501, 0)
 TextButton.BorderSizePixel = 0
@@ -30,7 +31,7 @@ TextButton.TextScaled = true
 TextButton.Parent = Frame
 
 local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(0, 210, 0, 400)
+TextBox.Size = UDim2.new(0.9545454, 0, 3.9999998, 0)
 TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 TextBox.BackgroundTransparency = 0.1
 TextBox.Position = UDim2.new(1.1972729, 0, -0.05, 0)
@@ -57,7 +58,6 @@ local Services = {
 	game:GetService("ReplicatedStorage"),
 	game:GetService("ReplicatedFirst"),
 	game:GetService("Lighting"),
-	plr -- substitui o GetService("Players")
 }
 
 -- Função recursiva para montar lista hierárquica
@@ -77,7 +77,7 @@ end
 -- Função principal que lista todos os serviços e objetos
 local function listAllInstances()
 	local lines = {}
-	table.insert(lines, "=== Lista de instâncias acessíveis ===\n")
+	--table.insert(lines, "=== Lista de instâncias acessíveis ===\n")
 
 	for _, service in ipairs(Services) do
 		table.insert(lines, string.format("(%s)", service.Name))
@@ -91,7 +91,6 @@ local function listAllInstances()
 	return table.concat(lines, "\n")
 end
 
--- Clique do botão
 TextButton.MouseButton1Click:Connect(function()
 	local output = listAllInstances()
 	TextBox.Text = output
