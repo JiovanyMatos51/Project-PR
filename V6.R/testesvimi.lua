@@ -1,6 +1,6 @@
 -- Information
 local title = "Kofu SAB Hacks"
-local versao = "v0.1.1"
+local versao = "v0.1.2"
 local logotitle = "KF"
 local canvasy = 1.5
 
