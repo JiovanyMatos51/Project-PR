@@ -399,9 +399,9 @@ end
 
 ZListins.MouseButton1Click:Connect(function()
 	if TextBox.Visible == false then
+		TextBox.Visible = true
 	local output = listAllInstances()
 	TextBox.Text = output
-		TextBox.Visible = true
 	else
 		TextBox.Visible = false
 	end
