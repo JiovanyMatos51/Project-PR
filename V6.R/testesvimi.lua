@@ -1,35 +1,30 @@
 -- Information
 local title = "Kofu SAB Hacks"
-local versao = "v1.5.0"
+local versao = "v1.6.0"
 local logotitle = "KF"
 local canvasy = 1.5
 
 -- Variables
 local plr = game.Players.LocalPlayer
 local Character = plr.Character or plr.CharacterAdded:Wait()
+local HRP = Character:WaitForChild("HumanoidRootPart")
 local plrgui = plr:WaitForChild("PlayerGui")
-local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+local flightForce = 100  -- intensidade da força (pode ajustar)
+local stopDistance = 10   -- distância para parar o voo
+local flightEnabled = false
+local currentConnection
+local targetPart = nil
 
 -- Tabelas
 local Services = {
-	game:GetService("Workspace"),
+	--game:GetService("Workspace"),
 	game:GetService("ReplicatedStorage"),
 	game:GetService("ReplicatedFirst"),
 	game:GetService("Lighting"),
 	plr,
 	game:GetService("StarterGui")
-}
-
-local IgnoreList = {
-	"Side 1",
-	"Side 2",
-	"Side 3",
-	"PointLight",
-	"Attachment",
-	"Beam",
-	"UIGradient",
-	"UIStroke",
-	"UIListLayout"
 }
 
 -- Create GUI
@@ -426,72 +421,82 @@ local function getNumericValue()
 	return val
 end
 
--- Função que verifica se o nome contém uma das palavras da lista
-local function shouldIgnore(name)
-	local lowerName = string.lower(name)
-	for _, word in ipairs(IgnoreList) do
-		if string.find(lowerName, string.lower(word)) then
-			return true
-		end
-	end
-	return false
-end
-
 -- Função recursiva para montar lista hierárquica
 local function listInstances(parent, depth)
 	local lines = {}
 	local prefix = string.rep("-", depth)
-
 	for _, obj in ipairs(parent:GetChildren()) do
-		if not shouldIgnore(obj.Name) then
-			table.insert(lines, string.format("%s %s (%s)", prefix, obj.Name, obj.ClassName))
-			-- recursão só acontece se o item não foi ignorado
-			local descendants = listInstances(obj, depth + 1)
-			for _, line in ipairs(descendants) do
-				table.insert(lines, line)
-			end
+		table.insert(lines, string.format("%s %s (%s)", prefix, obj.Name, obj.ClassName))
+		local descendants = listInstances(obj, depth + 1)
+		for _, line in ipairs(descendants) do
+			table.insert(lines, line)
 		end
 	end
-
 	return lines
 end
 
--- Função principal
+-- Função principal que lista todos os serviços e objetos
 local function listAllInstances()
 	local lines = {}
 	table.insert(lines, "=== Lista de instâncias acessíveis ===\n")
 
 	for _, service in ipairs(Services) do
-		if not shouldIgnore(service.Name) then
-			table.insert(lines, string.format("(%s)", service.Name))
-			local descendants = listInstances(service, 1)
-			for _, line in ipairs(descendants) do
-				table.insert(lines, line)
-			end
-			table.insert(lines, "")
+		table.insert(lines, string.format("(%s)", service.Name))
+		local descendants = listInstances(service, 1)
+		for _, line in ipairs(descendants) do
+			table.insert(lines, line)
 		end
+		table.insert(lines, "")
 	end
 
 	return table.concat(lines, "\n")
 end
 
-
--- NO CLIP
-local function teleportForward()
-	-- Atualiza as referências (caso o personagem tenha respawnado)
-	Character = plr.Character or plr.CharacterAdded:Wait()
-	local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-	if not HumanoidRootPart then return end
-	-- Pega a direção da câmera (onde o player está olhando)
-	local lookVector = Camera.CFrame.LookVector
-	-- Calcula a nova posição
-	local val = getNumericValue()
-	if not val then return end
-	local newPosition = HumanoidRootPart.Position + (lookVector * val)
-	-- Move o player pra lá
-	HumanoidRootPart.CFrame = CFrame.new(newPosition, newPosition + lookVector)
+local function StopFlight()
+	if flightEnabled then
+		flightEnabled = false
+		if currentConnection then currentConnection:Disconnect() end
+		if HRP:FindFirstChildOfClass("BodyVelocity") then
+			HRP:FindFirstChildOfClass("BodyVelocity"):Destroy()
+		end
+	end
 end
 
+local function FlyToPart(target)
+	if not target or not target:IsA("BasePart") then
+		return
+	end
+	if flightEnabled then
+		StopFlight()
+		return
+	end
+
+	flightEnabled = true
+
+	local bodyVel = Instance.new("BodyVelocity")
+	bodyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+	bodyVel.P = 5e3
+	bodyVel.Velocity = Vector3.zero
+	bodyVel.Parent = HRP
+
+	currentConnection = RunService.Heartbeat:Connect(function()
+		if not flightEnabled or not target.Parent then
+			return
+		end
+
+		local direction = (target.Position - HRP.Position)
+		local distance = direction.Magnitude
+
+		if distance <= stopDistance then
+			bodyVel:Destroy()
+			currentConnection:Disconnect()
+			flightEnabled = false
+			return
+		end
+
+		bodyVel.Velocity = direction.Unit * flightForce
+	end)
+end
 
 -- Buttons
 
@@ -507,26 +512,23 @@ ZListins.MouseButton1Click:Connect(function()
 end)
 
 ADash.MouseButton1Click:Connect(function()
-		teleportForward()
-end)
-
-DVelocidade.MouseButton1Click:Connect(function()
-	Character = plr.Character or plr.CharacterAdded:Wait()
-	local Humanoid = Character:WaitForChild("Humanoid")
-	local val = getNumericValue()
-	if not val then return end
-	Humanoid.WalkSpeed = val
-end)
-
--- Altera altura do pulo
-ESalto.MouseButton1Click:Connect(function()
-	Character = plr.Character or plr.CharacterAdded:Wait()
-	local Humanoid = Character:WaitForChild("Humanoid")
-	local val = getNumericValue()
-	if not val then return end
-	if Humanoid.JumpHeight then
-		Humanoid.JumpHeight = val
-	else
-		Humanoid.JumpPower = val
+	if targetPart then
+		FlyToPart(targetPart)
 	end
+end)
+
+CTeleportBase.MouseButton1Click:Connect(function()
+	if targetPart then
+		targetPart:Destroy()
+	end
+
+	targetPart = Instance.new("Part")
+	targetPart.Size = Vector3.new(4, 1, 4)
+	targetPart.Anchored = true
+	targetPart.CanCollide = false
+	targetPart.BrickColor = BrickColor.new("Bright blue")
+	targetPart.Material = Enum.Material.Neon
+	targetPart.Name = "DestinoLocal"
+	targetPart.Position = HRP.Position
+	targetPart.Parent = workspace
 end)
