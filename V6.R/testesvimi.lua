@@ -309,6 +309,7 @@ TextBox.FontSize = Enum.FontSize.Size14
 TextBox.TextSize = 10
 TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 TextBox.Text = ""
+TextBox.MultiLine = true
 TextBox.CursorPosition = -1
 TextBox.Font = Enum.Font.FredokaOne
 TextBox.ClearTextOnFocus = false
