@@ -13,4 +13,4 @@ text1.Size = UDim2.new(0,180,0,50)
 text1.Position = UDim2.new(0,0,0,20)
 text1.Parent = frame
 text1.BackgroundTransparency = 1
-text1.Text = "O Kotoko é gay"
+text1.Text = "Cocofanto Elefanto para todos meus amores"
