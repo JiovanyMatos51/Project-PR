@@ -1,6 +1,6 @@
 -- Information
 local title = "Kofu SAB Hacks"
-local versao = "v0.1.0"
+local versao = "v0.1.1"
 local logotitle = "KF"
 local canvasy = 1.5
 
@@ -251,7 +251,7 @@ local TextLabel1 = Instance.new("TextLabel") -- VERSION TITLE
 TextLabel1.Size = UDim2.new(0.3052632, 0, 0.0638889, 0)
 TextLabel1.BorderColor3 = Color3.fromRGB(0, 0, 0)
 TextLabel1.BackgroundTransparency = 1
-TextLabel1.Position = UDim2.new(0.7382423, 0, 0.9338543, 0)
+TextLabel1.Position = UDim2.new(0.73, 0, 0.9338543, 0)
 TextLabel1.BorderSizePixel = 0
 TextLabel1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 TextLabel1.FontSize = Enum.FontSize.Size14
@@ -306,7 +306,7 @@ TextBox.Position = UDim2.new(-0.7789474, 0, 0.0083333, 0)
 TextBox.BorderSizePixel = 0
 TextBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 TextBox.FontSize = Enum.FontSize.Size14
-TextBox.TextSize = 14
+TextBox.TextSize = 10
 TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 TextBox.Text = ""
 TextBox.CursorPosition = -1
@@ -376,20 +376,36 @@ local Services = {
 	game:GetService("ReplicatedStorage"),
 	game:GetService("ReplicatedFirst"),
 	game:GetService("Lighting"),
-	game:GetService("Players"),
+	plr,
 	game:GetService("StarterGui")
 }
 
+-- Função recursiva para montar lista hierárquica
+local function listInstances(parent, depth)
+	local lines = {}
+	local prefix = string.rep("-", depth)
+	for _, obj in ipairs(parent:GetChildren()) do
+		table.insert(lines, string.format("%s %s (%s)", prefix, obj.Name, obj.ClassName))
+		local descendants = listInstances(obj, depth + 1)
+		for _, line in ipairs(descendants) do
+			table.insert(lines, line)
+		end
+	end
+	return lines
+end
+
+-- Função principal que lista todos os serviços e objetos
 local function listAllInstances()
 	local lines = {}
 	table.insert(lines, "=== Lista de instâncias acessíveis ===\n")
 
 	for _, service in ipairs(Services) do
-		table.insert(lines, string.format("[%s]", service.Name))
-		for _, descendant in ipairs(service:GetDescendants()) do
-			table.insert(lines, string.format(" - %s (%s)", descendant.Name, descendant.ClassName))
+		table.insert(lines, string.format("(%s)", service.Name))
+		local descendants = listInstances(service, 1)
+		for _, line in ipairs(descendants) do
+			table.insert(lines, line)
 		end
-		table.insert(lines, "") -- linha em branco pra separar serviços
+		table.insert(lines, "")
 	end
 
 	return table.concat(lines, "\n")
@@ -398,7 +414,17 @@ end
 -- Buttons
 
 ZListins.MouseButton1Click:Connect(function()
+	if TextBox.Visible == false then
 	TextBox.Visible = true
 	local output = listAllInstances()
-	TextBox.Text = output
+
+	-- Segurança: corta se for texto demais
+	if #output > 197000 then
+		output = output:sub(1, 197000) .. "\n[Lista cortada: muito conteúdo]"
+	end
+
+		TextBox.Text = output
+	else
+		TextBox.Visible = false
+	end
 end)
